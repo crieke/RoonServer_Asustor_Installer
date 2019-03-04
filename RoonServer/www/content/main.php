@@ -33,10 +33,6 @@ var dbexist = <?php if (isset($dblocation)) {
         var modalContent = $(this).attr('id');
 
         $('#modal-content').load("modals.php?s=" + modalContent);
-        //$('#modal-body').load("modals.php?s=" + modalContent + "&r=DESCRIPTION");
-
-        // Request Modal with content
-
 
         //Open Modal
         $('#modal').modal('show');

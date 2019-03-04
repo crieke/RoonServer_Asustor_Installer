@@ -31,7 +31,7 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
                                 echo '<span style="color: red;">' . localize("OVERVIEW_ROONSERVER_PANEL_STATUS_STOPPED") . '</span>';
                             } ?><br>
                             <b><?php echo localize("OVERVIEW_ROONSERVER_PANEL_VERSION"); ?>
-                                :</b> <?php echo $RoonVersion[1]; ?><br>
+                            :</b> <?php if (isset($RoonVersion[1])) {echo $RoonVersion[1];}; ?><br>
                             <b><?php echo localize("OVERVIEW_ROONSERVER_PANEL_NAS_VERSION"); ?>
                                 :</b> <?php
                             $app_cfg = file_get_contents('/usr/local/AppCentral/RoonServer/CONTROL/config.json');

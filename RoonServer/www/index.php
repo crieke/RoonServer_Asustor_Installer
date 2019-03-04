@@ -146,7 +146,7 @@ include_once("__functions.php");
                 if (!response.success) {
                     $('#modalblock').html('');
                 } else {
-                    $('#modal').modal('show');
+                    isLoading();
                 }
             }
         });
@@ -371,15 +371,11 @@ include_once("__functions.php");
         );
 
         roonIconAni("#loading");
-
-        if ( ! $onlyShow ) {
-            $.ajax({
-                url: '<?php echo NASHOST;?>/RoonServer/ajax/ajax.php?a=redownload',
-                success: function () {
-
-                }
-            });
-        }
+        $.ajax({
+            url: '<?php echo NASHOST;?>/RoonServer/ajax/ajax.php?a=redownload',
+            success: function () {
+            }
+        });
         var processRunning = setInterval(checkProcess, 3000);
         function checkProcess() {
             $.ajax({
@@ -502,9 +498,14 @@ include_once("__functions.php");
 
     }
 
-    $onlyShow=false;
-    $( function() {
+    function isLoading() {
+        var action = 'dbPathIsSet';
         $.ajax({
+            url: '<?php echo NASHOST;?>/RoonServer/ajax/ajax.php?a=' + action,
+            dataType: 'json',
+            success: function (response) {
+                if (response.success) {
+                    $.ajax({
                 url: '<?php echo NASHOST;?>/RoonServer/ajax/ajax.php?a=checkHelperScript',
                 dataType: 'json',
                 success: function (response) {
@@ -534,7 +535,15 @@ include_once("__functions.php");
                     }
                 }
         });
-    });
+                }
+            }
+        });
+    };
+
+
+$( function() {
+    isLoading();
+});
 
 
 </script>

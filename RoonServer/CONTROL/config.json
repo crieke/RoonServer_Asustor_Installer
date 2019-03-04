@@ -2,7 +2,7 @@
   "general" : {
     "package" : "RoonServer",
     "name" : "Roon Server",
-    "version" : "2019-03-02",
+    "version" : "2019-03-04",
     "depends" : [
       "entware",
       "ffmpeg"
