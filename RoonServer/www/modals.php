@@ -1,5 +1,4 @@
 <?php
-
 include_once("__include.php");
 include_once("__functions.php");
 

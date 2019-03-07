@@ -1,5 +1,5 @@
 <?php
-if (!isset($_COOKIE['as_sid']) && ($_COOKIE['as_logout'] == "1") || empty($_COOKIE['as_sid'])) {
+if (isset($_COOKIE['as_sid']) && ($_COOKIE['as_logout'] == "1") || empty($_COOKIE['as_sid'])) {
     die("not logged in! ;)");
 }
 $NAS_BRAND="Asustor";
