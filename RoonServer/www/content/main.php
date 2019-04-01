@@ -1,8 +1,3 @@
-<?php
-if (isset($_COOKIE['as_sid']) && ($_COOKIE['as_logout'] == "1") || empty($_COOKIE['as_sid'])) {
-    die("not logged in! ;)");
-}
-?>
 <div id="contentblock" class="container">
     <div class="roon-template">
         <span class="fa-stack fa-8x">

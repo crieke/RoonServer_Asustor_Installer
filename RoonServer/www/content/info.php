@@ -1,7 +1,4 @@
 <?php
-if (isset($_COOKIE['as_sid']) && ($_COOKIE['as_logout'] == "1") || empty($_COOKIE['as_sid'])) {
-    die("not logged in! ;)");
-}
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
     include_once("../__include.php");
     include_once("../__functions.php");

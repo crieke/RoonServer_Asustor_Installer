@@ -1,9 +1,5 @@
 <?php
 
-if (isset($_COOKIE['as_sid']) && ($_COOKIE['as_logout'] == "1") || empty($_COOKIE['as_sid'])) {
-    die("not logged in! ;)");
-}
-
 function write_ini($file, $array, $i = 0){
     $str="";
     foreach ($array as $k => $v){
