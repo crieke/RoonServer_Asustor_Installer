@@ -3,7 +3,6 @@
 ## VARIABLES
 APP_NAME="RoonServer"
 APKG_PKG_DIR="/usr/local/AppCentral/RoonServer"
-
 ROON_FILENAME="RoonServer_linuxx64.tar.bz2"
 ROON_PKG_URL="https://download.roonlabs.com/builds/$ROON_FILENAME"
 WEBUI_STATUS="$APKG_PKG_DIR/web-status"
@@ -205,8 +204,6 @@ downloadBinaries() {
     /bin/rm -R "$APKG_PKG_DIR/RoonServer_Old"
     getInfo
 }
-
-echo `cat "$APKG_PKG_DIR/web-status"`
 
 #check if RoonServer has initially been downloaded after apkg install
 if [ ! -d "$APKG_PKG_DIR/RoonServer" ]; then

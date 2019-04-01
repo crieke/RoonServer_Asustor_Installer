@@ -3,7 +3,7 @@
 . /etc/script/lib/command.sh
 
 APKG_PKG_DIR=/usr/local/AppCentral/RoonServer
-BASH_CMD=`find /usr/local/AppCentral/entware/ -type f -name "bash"`
+APKG_BASH="$APKG_PKG_DIR/bin/bash"
 PID_FILE=/var/run/RoonServer_webui.pid
 APKG_NAME="RoonServer"
 WEBUI_STATUS="$APKG_PKG_DIR/web-status"
@@ -39,14 +39,6 @@ echolog () {
 	fi
 }
 
-# Check if bash symlink exists
-if [ ! -L /bin/bash ]; then
-    echolog "Creating symlink for bash."
-    ln -sf $BASH_CMD /bin/bash
-else
-    echolog "bash exists."
-fi
-
 if [ -f $ROON_PIDFILE ]; then
 	PID=`cat "${ROON_PIDFILE}"`
 fi
@@ -57,7 +49,17 @@ case $1 in
 	start)
     	echo "" > $ROON_LOG_FILE
 		# start script here
-    	watch -n 5 $WEBUI_HELPER_SCRIPT &
+		
+		# Check if bash symlink exists
+        if [ ! -e /bin/bash ]; then
+           echolog "Creating symlink for bash."
+           ln -sf $APKG_BASH /bin/bash
+        else
+            echolog "Using bash at" $(readlink /bin/bash)
+        fi
+    	
+		
+		watch -n 5 $WEBUI_HELPER_SCRIPT &
         echo $! > $ROON_WEBACTIONS_PIDFILE;
 		echo "start" > $WEBUI_STATUS
 	;;

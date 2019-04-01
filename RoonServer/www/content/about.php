@@ -1,8 +1,4 @@
 <?php
-if (isset($_COOKIE['as_sid']) && ($_COOKIE['as_logout'] == "1") || empty($_COOKIE['as_sid'])) {
-    die("not logged in! ;)");
-}
-
 $ContributorsManual = array(
     array(
         'login' => 'RoonLabs',
@@ -371,6 +367,12 @@ $ContributorsManual = array(
                     'author' => 'Adobe',
                     'href' => 'https://github.com/adobe-webplatform/Snap.svg',
                     'license' => 'Apache 2.0'
+                ),
+                array(
+                    'assetName' => 'Bash',
+                    'author' => 'GNU Operating System',
+                    'href' => 'https://www.gnu.org/software/bash/',
+                    'license' => 'GPLv3'
                 )
             );
 

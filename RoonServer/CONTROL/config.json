@@ -2,9 +2,8 @@
   "general" : {
     "package" : "RoonServer",
     "name" : "Roon Server",
-    "version" : "2019-03-04",
+    "version" : "2019-04-01",
     "depends" : [
-      "entware",
       "ffmpeg"
     ],
     "conflicts" : [],
@@ -17,8 +16,7 @@
   },
   "adm-desktop" : {
     "app" : {
-      "type" : "webserver",
-      "session-id" : true
+      "type" : "webserver"
     },
     "privilege" : {
       "accessible" : "users",
