@@ -65,8 +65,8 @@ include_once("__functions.php");
             echo localize("DEBUG_NAS_ROOT") . ': ' . APPINSTALLPATH . "<br>";
             echo localize("DEBUG_LANGUAGE") . ': ' . $_COOKIE['as_lang'] . "<br>";
             echo "Local WWW:" . NASHOST . "<br>";
-            if (file_exists(APPINSTALLPATH . '/RoonServer.pid')) {
-                $RoonServerPID = file_get_contents(APPINSTALLPATH . '/RoonServer.pid');
+            if (file_exists('/var/run/RoonServer.pid')) {
+                $RoonServerPID = file_get_contents('/var/run/RoonServer.pid');
                 echo "RoonServer PID: " . $RoonServerPID . '<br>';
             }
             echo localize("DEBUG_NAS_DOCROOT") . ': ' . NASHOST . '<br>';

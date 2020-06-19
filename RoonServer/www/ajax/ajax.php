@@ -21,9 +21,9 @@ if ($strVarAction == 'gettree') {
 }
 
 if ($strVarAction == 'checkHelperScript') {
-    if (file_exists(APPINSTALLPATH . '/.webui.lock') or file_exists(APPINSTALLPATH . '/web-status')) {
+    if (file_exists('/tmp/.RoonServer-webui.lock') or file_exists(APPINSTALLPATH . '/web-status')) {
         $running = true;
-        $currentActivity = file_get_contents(APPINSTALLPATH . '/.webui.lock');
+        $currentActivity = file_get_contents('/tmp/.RoonServer-webui.lock');
     } else { 
         $running = false;
         unset($currentActivity);
