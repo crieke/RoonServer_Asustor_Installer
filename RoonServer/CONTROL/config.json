@@ -2,7 +2,7 @@
   "general" : {
     "package" : "RoonServer",
     "name" : "Roon Server",
-    "version" : "2020-06-19",
+    "version" : "2020-06-20",
     "depends" : [
       "ffmpeg"
     ],
