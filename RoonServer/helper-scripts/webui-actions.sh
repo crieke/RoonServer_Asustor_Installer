@@ -6,10 +6,10 @@ APKG_PKG_DIR="/usr/local/AppCentral/RoonServer"
 ROON_FILENAME="RoonServer_linuxx64.tar.bz2"
 ROON_PKG_URL="https://download.roonlabs.com/builds/$ROON_FILENAME"
 WEBUI_STATUS="$APKG_PKG_DIR/web-status"
-LOCKFILE="${APKG_PKG_DIR}/.webui.lock"
+LOCKFILE="/tmp/.RoonServer-webui.lock"
 ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
 ROON_WWW_DIR="/usr/local/www/RoonServer"
-ROON_PIDFILE="${APKG_PKG_DIR}/RoonServer.pid"
+ROON_PIDFILE="/var/run/RoonServer.pid"
 ROON_LOG_FILE="${APKG_PKG_DIR}/RoonServer.log"
 
 if [ -f $LOCKFILE ]; then
@@ -49,9 +49,8 @@ getInfo () {
     APP_VERSION=$(cat ${APKG_PKG_DIR}/CONTROL/config.json | grep "version" | tr \" " " |  awk '{print $3}')
     ROON_VERSION=`cat "${APKG_PKG_DIR}/RoonServer/VERSION"`
     ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
-    ROON_PIDFILE="${APKG_PKG_DIR}/RoonServer.pid"
-    WATCH_PID="$(cat ${APKG_PKG_DIR}/webactions.pid)"
-    ROON_WEBACTIONS_PIDFILE="${APKG_PKG_DIR}/webactions.pid"
+    ROON_WEBACTIONS_PIDFILE="/var/run/RoonServer_webactions.pid"
+    WATCH_PID="$(cat ${ROON_WEBACTIONS_PIDFILE})"
     ROON_DATABASE_DIR=`awk -F "= " '/DB_Path/ {print $2}' ${APKG_PKG_DIR}/etc/RoonServer.conf`
     NAS_DEF_IF=$(route | grep default | awk '{print $8}')
     NAS_IF_MTU=$(cat /sys/class/net/${NAS_DEF_IF}/mtu)

@@ -8,8 +8,8 @@ PID_FILE=/var/run/RoonServer_webui.pid
 APKG_NAME="RoonServer"
 WEBUI_STATUS="$APKG_PKG_DIR/web-status"
 ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
-ROON_PIDFILE="${APKG_PKG_DIR}/RoonServer.pid"
-ROON_WEBACTIONS_PIDFILE="${APKG_PKG_DIR}/webactions.pid"
+ROON_PIDFILE="/var/run/RoonServer.pid"
+ROON_WEBACTIONS_PIDFILE="/var/run/RoonServer_webactions.pid"
 ROON_DATABASE_DIR=`awk -F "= " '/DB_Path/ {print $2}' ${APKG_PKG_DIR}/etc/RoonServer.conf`
 ROON_DATABASE_DIR_FS=`df -T "${ROON_DATABASE_DIR}" | grep "^/dev" | awk '{print $2}'`
 ROON_LOG_FILE="${APKG_PKG_DIR}/RoonServer.log"
@@ -93,8 +93,8 @@ case $1 in
 		fi
 
 		#Remove lockfile if RoonServer has been stopped when helper process was active
-		if [ ! -f "${APKG_PKG_DIR}/.webui.lock" ]; then
-		    rm "${APKG_PKG_DIR}/.webui.lock";
+		if [ -f "/tmp/.RoonServer-webui.lock" ]; then
+		    rm "/tmp/.RoonServer-webui.lock";
 		fi
 		;;
 
