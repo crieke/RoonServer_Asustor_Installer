@@ -9,7 +9,11 @@ case "$APKG_PKG_STATUS" in
 		;;
 	upgrade)
 		# pre upgrade script here (backup data)
-		cp $APKG_PKG_DIR/etc/RoonServer.conf $APKG_TEMP_DIR/RoonServer.conf
+		[ -d "$APKG_PKG_DIR/etc" ] && cp -R "$APKG_PKG_DIR/etc" "$APKG_TEMP_DIR/"
+		[ -d "$APKG_PKG_DIR/RoonServer" ] && cp -R "$APKG_PKG_DIR/RoonServer" "$APKG_TEMP_DIR/"
+		[ -d "$APKG_PKG_DIR/id" ] && cp -R  "$APKG_PKG_DIR/id" "$APKG_TEMP_DIR/"
+		
+
 		;;
 	*)
 		;;
@@ -17,3 +21,4 @@ case "$APKG_PKG_STATUS" in
 esac
 
 exit 0
+
