@@ -11,6 +11,7 @@ ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
 ROON_WWW_DIR="/usr/local/www/RoonServer"
 ROON_PIDFILE="/var/run/RoonServer.pid"
 ROON_LOG_FILE="${APKG_PKG_DIR}/RoonServer.log"
+ROON_ID_DIR="${APKG_PKG_DIR}/id"
 
 if [ -f $LOCKFILE ]; then
     exit
@@ -121,6 +122,7 @@ startRoonServer() {
     if [ "$ROON_DATABASE_DIR" != "" ] && [ -d "$ROON_DATABASE_DIR" ]; then
         export ROON_DATAROOT="${ROON_DATABASE_DIR}"
 	    export ROON_INSTALL_TMPDIR="${ROON_TMP_DIR}"
+	    export ROON_ID_DIR
 	    export TMP="${ROON_TMP_DIR}"
 
         # Checking for additional start arguments.
