@@ -166,8 +166,15 @@ function removeFirstChildDir($path)
 
 function set_db_path($folder)
 {
+  if(strpos($folder, '..') !== false)
+  { 
+    die(); 
+  }
+   
+  if ( is_dir($folder) ) {
     $config = array('DB_Path' => $folder);
     write_ini("/usr/local/AppCentral/RoonServer/etc/RoonServer.conf", $config);
+  }  
 }
 
 function getTreeAt($folder, $strSessionID)
