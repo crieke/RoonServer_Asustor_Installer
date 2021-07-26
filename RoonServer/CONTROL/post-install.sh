@@ -6,9 +6,9 @@ case "$APKG_PKG_STATUS" in
 
 	install)
 		# post install script here
-		[ ! -d "$APKG_APKG_DIR/tmp" ] && /bin/mkdir -m 777 "$APKG_PKG_DIR/tmp"
-		[ ! -d "$APKG_APKG_DIR/etc" ] && /bin/mkdir -m 777 "$APKG_PKG_DIR/etc"
-		[ ! -d "$APKG_APKG_DIR/id" ] && /bin/mkdir -m 777 "$APKG_PKG_DIR/id"
+		[ ! -d "$APKG_PKG_DIR/tmp" ] && /bin/mkdir -m 777 "$APKG_PKG_DIR/tmp"
+		[ ! -d "$APKG_PKG_DIR/etc" ] && /bin/mkdir -m 777 "$APKG_PKG_DIR/etc"
+		[ ! -d "$APKG_PKG_DIR/id" ] && /bin/mkdir -m 777 "$APKG_PKG_DIR/id"
 		
 		;;
 	upgrade)
