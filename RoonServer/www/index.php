@@ -65,10 +65,7 @@ include_once("__functions.php");
             echo localize("DEBUG_NAS_ROOT") . ': ' . APPINSTALLPATH . "<br>";
             echo localize("DEBUG_LANGUAGE") . ': ' . $_COOKIE['as_lang'] . "<br>";
             echo "Local WWW:" . NASHOST . "<br>";
-            if (file_exists('/var/run/RoonServer.pid')) {
-                $RoonServerPID = file_get_contents('/var/run/RoonServer.pid');
-                echo "RoonServer PID: " . $RoonServerPID . '<br>';
-            }
+            echo "RoonServer PID: " . isRunning('getpid') . '<br>';
             echo localize("DEBUG_NAS_DOCROOT") . ': ' . NASHOST . '<br>';
         }
     }
@@ -180,7 +177,7 @@ include_once("__functions.php");
                     $logDate = response.logFile;
                 }
         });
-        
+
         var processRunning = setInterval(checkProcess, 3000);
         function checkProcess() {
             $.ajax({
@@ -194,14 +191,14 @@ include_once("__functions.php");
                         ifrm.src = "/RoonServer/tmp/RoonServer_Asustor_Logs_" + $logDate + ".zip"
                         MODAL_LOGFILES_CHECK_DOWNLOAD_FOLDER = '<?php echo str_replace("'", "\'", localize("MODAL_LOGFILES_CHECK_DOWNLOAD_FOLDER"));?>';
                         SuccessAni('#download-area', MODAL_LOGFILES_CHECK_DOWNLOAD_FOLDER);
-                        $('.btn-close').prop('disabled', false);                                            
+                        $('.btn-close').prop('disabled', false);
                     }
                 }
-            }); 
+            });
         }
     }
 
-    function roonIconAni(targetDivBlock) {    
+    function roonIconAni(targetDivBlock) {
         var s = Snap(targetDivBlock);
         var svgSize = 70;
         var RoonCircle = s.circle(svgSize / 2, svgSize / 2, svgSize / 2);

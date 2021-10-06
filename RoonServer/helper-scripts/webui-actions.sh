@@ -9,9 +9,9 @@ WEBUI_STATUS="$APKG_PKG_DIR/web-status"
 LOCKFILE="/tmp/.RoonServer-webui.lock"
 ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
 ROON_WWW_DIR="/usr/local/www/RoonServer"
-ROON_PIDFILE="/var/run/RoonServer.pid"
-ROON_LOG_FILE="${APKG_PKG_DIR}/RoonServer.log"
 ROON_ID_DIR="${APKG_PKG_DIR}/id"
+ROON_LOG_FILE="/dev/null"
+ROON_PID=$(ps aux | grep "${APKG_PKG_DIR}/RoonServer/start.sh" | grep -v grep | awk '{print $1}')
 
 if [ -f $LOCKFILE ]; then
     exit
@@ -34,7 +34,7 @@ lockfile() {
         ;;
         *)
             echo "Usage: $0 {create|remove|check}"
-    esac 
+    esac
 }
 
 lockfile create
@@ -48,26 +48,29 @@ getInfo () {
     NAS_MEMTOTAL=`awk '/MemTotal/ {print $2}' /proc/meminfo`
     NAS_MEMFREE=`awk '/MemFree/ {print $2}' /proc/meminfo`
     APP_VERSION=$(cat ${APKG_PKG_DIR}/CONTROL/config.json | grep "version" | tr \" " " |  awk '{print $3}')
-    ROON_VERSION=`cat "${APKG_PKG_DIR}/RoonServer/VERSION"`
+    ROON_VERSION=`[ -f "${APKG_PKG_DIR}/RoonServer/VERSION" ] && cat "${APKG_PKG_DIR}/RoonServer/VERSION" || echo "not available"`
     ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
     ROON_WEBACTIONS_PIDFILE="/var/run/RoonServer_webactions.pid"
-    WATCH_PID="$(cat ${ROON_WEBACTIONS_PIDFILE})"
-    ROON_DATABASE_DIR=`awk -F "= " '/DB_Path/ {print $2}' ${APKG_PKG_DIR}/etc/RoonServer.conf`
+    WATCH_PID="$([ -f "$ROON_WEBACTIONS_PIDFILE" ] && cat ${ROON_WEBACTIONS_PIDFILE})"
     NAS_DEF_IF=$(route | grep default | awk '{print $8}')
     NAS_IF_MTU=$(cat /sys/class/net/${NAS_DEF_IF}/mtu)
     NAS_HOSTNAME=`confutil -get /etc/nas.conf Basic Hostname`
-    ROON_DATABASE_DIR_FS=`df -T "${ROON_DATABASE_DIR}" | grep "^/dev" | awk '{print $2}'`
-    ROON_LOG_FILE="${APKG_PKG_DIR}/RoonServer.log"
-    ROON_DEBUG_EXTERNAL_LOG="${ROON_DATABASE_DIR}/ROON_DEBUG_EXTERNAL_LOG.txt"
-
-    # Hidden feature to write a logfile into the database location (only if the txt file exists)
-    if [[ -f $ROON_DEBUG_EXTERNAL_LOG ]]; then
-	    ROON_LOG_FILE=$ROON_DEBUG_EXTERNAL_LOG
+    if [ -f ${APKG_PKG_DIR}/etc/RoonServer.conf ]; then
+       ROON_DATABASE_DIR=`awk -F "= " '/DB_Path/ {print $2}' ${APKG_PKG_DIR}/etc/RoonServer.conf`
+       ROON_DATAROOT="${ROON_DATABASE_DIR}/RoonOnNAS"
+       ROON_DATABASE_DIR_FS=`df -T "${ROON_DATABASE_DIR}" | grep "^/dev" | awk '{print $2}'`
+       ROON_DATABASE_DIR_FREE_INODES=`df -PThi "${ROON_DATAROOT}" | awk '{print $5}' | tail -1`
+       ROON_FFMPEG_DIR="${ROON_DATAROOT}/bin"
     fi
 
-    if [ -f $ROON_PIDFILE ]; then
-	    START_PID=`cat "${ROON_PIDFILE}"`
-    fi
+}
+
+RoonOnNAS_folderCheck ()
+{
+  if [ -d "${ROON_DATABASE_DIR}" ]; then
+    [ -d "${ROON_DATAROOT}" ] || mkdir "${ROON_DATAROOT}"
+    [ -d "${ROON_FFMPEG_DIR}" ] || mkdir "${ROON_FFMPEG_DIR}"
+  fi
 }
 
 ## Log Function
@@ -90,9 +93,11 @@ echolog () {
 showInfo ()
 {
    ## Echoing System Info
-   echolog "ROON_DATABASE_DIR" "${ROON_DATABASE_DIR}"
+   echolog "ROON_DATAROOT" "${ROON_DATAROOT} - [`[ -d \"${ROON_DATAROOT}\" ] && echo \"available\" || echo \"not available\"`]"
    echolog "ROON_DATABASE_DIR_FS" "${ROON_DATABASE_DIR_FS}"
-   echolog "ROON_APP_DIR" "${APKG_PKG_DIR}"
+   echolog "ROON_ID_DIR" "$ROON_ID_DIR - [`[ -d \"$ROON_ID_DIR\" ] && echo \"available\" || echo \"not available\"`]"
+   echolog "Free Inodes" "${ROON_DATABASE_DIR_FREE_INODES}"
+   echolog "ROON_DIR" "${APKG_PKG_DIR}"
    echolog "Model" "${MODEL}"
    echolog "Asustor Serial" "${NAS_SERIAL}"
    echolog "Architecture" "${ARCH}"
@@ -108,10 +113,10 @@ showInfo ()
 
 startRoonServer() {
     echo "start" > $LOCKFILE
+    RoonOnNAS_folderCheck
     getInfo
-    if [ -f "$ROON_PIDFILE" ]; then
-        echolog "PID-File exists."
-        if [ -d "/proc/${START_PID}" ]; then
+    if [ ! -z "$ROON_PID" ] && kill -s 0 ${ROON_PID}; then
+        if [ -d "/proc/${ROON_PID}" ]; then
             echolog "RoonServer already running."
             return 1
         fi
@@ -119,23 +124,34 @@ startRoonServer() {
 
     echolog "Starting RoonServer"
     showInfo
-    if [ "$ROON_DATABASE_DIR" != "" ] && [ -d "$ROON_DATABASE_DIR" ]; then
-        export ROON_DATAROOT="${ROON_DATABASE_DIR}"
-	    export ROON_INSTALL_TMPDIR="${ROON_TMP_DIR}"
+    if [ "$ROON_DATABASE_DIR" != "" ] && [ -d "$ROON_DATAROOT" ]; then
+
+      ## Fix missing executable permission for ffmpeg
+      [ -f "${ROON_FFMPEG_DIR}/ffmpeg" ] && [ ! -x "${ROON_FFMPEG_DIR}/ffmpeg" ] && chmod 755 "${ROON_FFMPEG_DIR}/ffmpeg"
+
+       export ROON_DATAROOT
 	    export ROON_ID_DIR
+	    export PATH="$ROON_FFMPEG_DIR:$PATH"
+	    export ROON_INSTALL_TMPDIR="${ROON_TMP_DIR}"
 	    export TMP="${ROON_TMP_DIR}"
 
+       echo "" | tee -a "$ROON_LOG_FILE"
+       echo "############### Used FFMPEG Version ##############" | tee -a "$ROON_LOG_FILE"
+       echo -e "ffmpeg Path: $(which ffmpeg)" | tee -a "$ROON_LOG_FILE"
+       echo -e $(ffmpeg -version) | tee -a "$ROON_LOG_FILE"
+       echo "##################################################" | tee -a "$ROON_LOG_FILE"
+       echo "" | tee -a "$ROON_LOG_FILE"
+
         # Checking for additional start arguments.
-	    if [[ -f "{$ROON_DATABASE_DIR}/ROON_DEBUG_LAUNCH_PARAMETERS.txt" ]]; then
-	        ROON_ARGS=`cat "$ROON_DATABASE_DIR/ROON_DEBUG_LAUNCH_PARAMETERS.txt" | xargs | sed "s/ ---- /\n---- /g"`
+	    if [[ -f "${ROON_DATAROOT}/ROON_DEBUG_LAUNCH_PARAMETERS.txt" ]]; then
+	        ROON_ARGS=`cat "$ROON_DATAROOT/ROON_DEBUG_LAUNCH_PARAMETERS.txt" | xargs | sed "s/ ---- /\n---- /g"`
         else
 	        ROON_ARGS=""
 	    fi
 	    echolog "ROON_DEBUG_ARGS ${ROON_ARGS}"
 
         ## Start RoonServer
-	    ( ${APKG_PKG_DIR}/RoonServer/start.sh "${ROON_ARGS}" & echo $! >&3 ) 3>"${ROON_PIDFILE}"  | while read line; do echo `date +%d.%m.%y-%H:%M:%S` " --- $line"; done >> $ROON_LOG_FILE  2>&1 &
-	    echolog "RoonServer PID `cat ${ROON_PIDFILE}`"
+	    (${APKG_PKG_DIR}/RoonServer/start.sh "${ROON_ARGS}" | while read line; do echo `date +%d.%m.%y-%H:%M:%S` " --- $line"; done >> $ROON_LOG_FILE  2>&1) &
 
 	    echo "" | tee -a $ROON_LOG_FILE
 	    echo "" | tee -a $ROON_LOG_FILE
@@ -153,11 +169,12 @@ stopRoonServer() {
     echolog "Stopping RoonServer."
     echo "stop" > $LOCKFILE
     # stop script here
-	if [ -f "$ROON_PIDFILE" ]; then
-	    echolog "Roon PID to be killed: $START_PID" | tee -a $ROON_LOG_FILE
-		kill ${START_PID} >> $ROON_LOG_FILE
-		rm "${ROON_PIDFILE}" >> $ROON_LOG_FILE
-	fi
+	if [ ! -z "$ROON_PID" ] && kill -s 0 $ROON_PID; then
+	   echolog "Roon PID to be killed: $ROON_PID"
+		kill ${ROON_PID} >> $ROON_LOG_FILE
+	else
+    echolog "Could not stop RoonServer. It does not seem to be running."
+   fi
 }
 
 logs() {
@@ -169,14 +186,19 @@ logs() {
     echo "logs" > $LOCKFILE
 	start_dir=$(pwd)
     zipFile="${ROON_WWW_DIR}/tmp/RoonServer_Asustor_Logs_$logDate.zip"
-    cd $ROON_DATABASE_DIR
-    
-    if [ -d "$ROON_DATABASE_DIR/RoonServer" ]; then
+    cd $ROON_DATAROOT
+
+    if [ -d "$ROON_DATAROOT/RoonServer" ]; then
         echolog "Adding RoonServer/Logs"
         7z a $zipFile RoonServer/Logs
     fi
 
-    if [ -d "$ROON_DATABASE_DIR/RAATServer" ]; then
+    if [ -d "$ROON_DATAROOT/RAATServer" ]; then
+        echolog "Adding RAATServer/Logs"
+        7z a $zipFile RAATServer/Logs
+    fi
+
+    if [ -d "$ROON_DATAROOT/RAATServer" ]; then
         echolog "Adding RAATServer/Logs"
         7z a $zipFile RAATServer/Logs
     fi
@@ -188,28 +210,55 @@ logs() {
 }
 
 downloadBinaries() {
-    echo "download" > $LOCKFILE
-    if [ -f "$ROON_DATABASE_DIR/ROON_DEBUG_INSTALL_URL.txt" ]; then
-        CUSTOM_INSTALL_URL=`/bin/cat "$ROON_DATABASE_DIR/ROON_DEBUG_INSTALL_URL.txt"`
-        if [ ${CUSTOM_INSTALL_URL:0:4} == "http" ] && [ $(basename ${CUSTOM_INSTALL_URL}) == $(basename ${ROON_PKG_URL}) ] ; then
-            ROON_PKG_URL="${CUSTOM_INSTALL_URL}"
-        fi
+  echo "download" > $LOCKFILE
+  if [ -f "$ROON_DATAROOT/ROON_DEBUG_INSTALL_URL.txt" ]; then
+    CUSTOM_INSTALL_URL=`/bin/cat "$ROON_DATAROOT/ROON_DEBUG_INSTALL_URL.txt"`
+    if [ ${CUSTOM_INSTALL_URL:0:4} == "http" ] && [ $(basename ${CUSTOM_INSTALL_URL}) == $(basename ${ROON_PKG_URL}) ] ; then
+      ROON_PKG_URL="${CUSTOM_INSTALL_URL}"
     fi
+  fi
 
-    cd "$APKG_PKG_DIR/tmp"
-    /usr/bin/wget "$ROON_PKG_URL"
-    /bin/tar xjf "$ROON_FILENAME" -C "$APKG_PKG_DIR/tmp"
-    mv "$APKG_PKG_DIR/RoonServer" "$APKG_PKG_DIR/RoonServer_Old"
-    mv "$APKG_PKG_DIR/tmp/RoonServer" "$APKG_PKG_DIR/."
-    /bin/rm "$ROON_FILENAME"
-    /bin/rm -R "$APKG_PKG_DIR/RoonServer_Old"
-    getInfo
+  cd "$APKG_PKG_DIR/tmp"
+
+  ## Try Curl if available
+  PATH=/usr/builtin/bin:$PATH
+  if command -v curl >/dev/null 2>&1; then
+    echolog "Downloading Roon Server using curl command."
+    STATUSCODE=$(curl --write-out '%{http_code}' -sLfO "$ROON_PKG_URL")
+    R=$?
+  elif command -v wget >/dev/null 2>&1; then
+    echolog "Downloading Roon Server using wget command."
+    WGET_OUTPUT=$(wget -S "$ROON_PKG_URL" 2>&1)
+    R=$?
+    STATUSCODE=$(echo "$WGET_OUTPUT" | grep "HTTP/" | awk '{print $2}')
+  fi
+
+  if test "$R" != "0"; then
+    echolog "Roon Server download failed!"
+    echolog "URL: $ROON_PKG_URL)"
+    echolog "Status-Code: $STATUSCODE)"
+    exit 1
+  fi
+  echolog "Download finished! [$STATUSCODE]"
+
+  echolog "Extracting Roon Server from file..."
+  /bin/tar xjf "$ROON_FILENAME" -C "$APKG_PKG_DIR/tmp"
+  R=$?
+  if test "$R" != "0"; then
+    echolog "Could not extract downloadeded tar.bz2 file. Download may be corrupted."
+    [ -f "$APKG_PKG_DIR/tmp/$ROON_FILENAME" ] && /bin/rm "$APKG_PKG_DIR/tmp/$ROON_FILENAME"
+    exit 1
+  fi
+  [ -d "$APKG_PKG_DIR/RoonServer" ] && mv "$APKG_PKG_DIR/RoonServer" "$APKG_PKG_DIR/RoonServer_Old"
+  mv "$APKG_PKG_DIR/tmp/RoonServer" "$APKG_PKG_DIR/"
+  [ -f "$APKG_PKG_DIR/tmp/$ROON_FILENAME" ] && /bin/rm "$ROON_FILENAME"
+  [ -d "$APKG_PKG_DIR/RoonServer_Old" ] && /bin/rm -R "$APKG_PKG_DIR/RoonServer_Old"
+  getInfo
 }
 
 #check if RoonServer has initially been downloaded after apkg install
 if [ ! -d "$APKG_PKG_DIR/RoonServer" ]; then
-    getInfo
-	echolog "Downloading RoonServer"
+   getInfo
 	downloadBinaries
 fi
 
@@ -238,7 +287,6 @@ if [ -f "$WEBUI_STATUS" ]; then
             logs)
                 logs $2
                 ;;
-
             *)
                 echo "Illegal action."
                 ;;

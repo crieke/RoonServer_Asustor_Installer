@@ -9,10 +9,10 @@ case "$APKG_PKG_STATUS" in
 		;;
 	upgrade)
 		# pre upgrade script here (backup data)
-		[ -d "$APKG_PKG_DIR/etc" ] && cp -R "$APKG_PKG_DIR/etc" "$APKG_TEMP_DIR/"
-		[ -d "$APKG_PKG_DIR/RoonServer" ] && cp -R "$APKG_PKG_DIR/RoonServer" "$APKG_TEMP_DIR/"
-		[ -d "$APKG_PKG_DIR/id" ] && cp -R  "$APKG_PKG_DIR/id" "$APKG_TEMP_DIR/"
-		
+		[ -d "$APKG_PKG_DIR/etc" ] && mv "$APKG_PKG_DIR/etc" "$APKG_TEMP_DIR/"
+		[ -d "$APKG_PKG_DIR/RoonServer" ] && mv "$APKG_PKG_DIR/RoonServer" "$APKG_TEMP_DIR/"
+		[ -d "$APKG_PKG_DIR/id" ] && mv "$APKG_PKG_DIR/id" "$APKG_TEMP_DIR/"
+
 
 		;;
 	*)

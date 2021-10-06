@@ -4,17 +4,17 @@ function write_ini($file, $array, $i = 0){
     $str="";
     foreach ($array as $k => $v){
       if (is_array($v)){
-        $str.=str_repeat(" ",$i*2)."[$k]".PHP_EOL; 
+        $str.=str_repeat(" ",$i*2)."[$k]".PHP_EOL;
         $str.=put_ini_file("",$v, $i+1);
       }else
-        $str.=str_repeat(" ",$i*2)."$k = $v".PHP_EOL; 
+        $str.=str_repeat(" ",$i*2)."$k = $v".PHP_EOL;
     }
   if($file)
       return file_put_contents($file,$str);
     else
       return $str;
   }
-function debugToConsole($msg) { 
+function debugToConsole($msg) {
         echo "<script>console.log(".json_encode($msg).")</script>";
 }
 
@@ -88,7 +88,7 @@ function getFoldersAt($dir)
                                 $browseable = false;
                             }
                             break;
-                            
+
                             default:
                             $subDirs = glob($selectedDir . '/*' , GLOB_ONLYDIR);
                             if ( empty($subDirs) ) {
@@ -97,14 +97,14 @@ function getFoldersAt($dir)
                             break;
                     }
 
-                    if (is_dir($dir.'/'.$file)){ 
+                    if (is_dir($dir.'/'.$file)){
                         $list3 = array(
                             'text' => $file,
                             'path' => $selectedDir,
                             'iconCls' => 'external',
                             'anychildren' => $browseable,
                             'faCssClass' => $faCssClass);
-                        array_push($list, $list3);    
+                        array_push($list, $list3);
                     }
                 }
             }
@@ -167,14 +167,14 @@ function removeFirstChildDir($path)
 function set_db_path($folder)
 {
   if(strpos($folder, '..') !== false)
-  { 
-    die(); 
+  {
+    die();
   }
-   
+
   if ( is_dir($folder) ) {
     $config = array('DB_Path' => $folder);
     write_ini("/usr/local/AppCentral/RoonServer/etc/RoonServer.conf", $config);
-  }  
+  }
 }
 
 function getTreeAt($folder, $strSessionID)
@@ -283,12 +283,14 @@ function localize($phrase)
     }
 }
 
-function isRunning($pidfile, $option = null)
+function isRunning($option = null)
 {
-    if (file_exists($pidfile)) {
-        $pidfilecontent = file($pidfile, FILE_IGNORE_NEW_LINES);
-        if (is_dir('/proc/' . $pidfilecontent[0])) {
-            $pid = $pidfilecontent[0];
+   $getPIDcmd =  'ps aux | grep "' . APPINSTALLPATH . '/RoonServer/start.sh" | grep -v grep | awk \'{print $1}\'';
+   $RoonServerPID = exec($getPIDcmd);
+
+    if ($RoonServerPID > 0) {
+        if (is_dir('/proc/' . $RoonServerPID)) {
+            $pid = $RoonServerPID;
             $running = true;
         } else {
             $pid = "";
