@@ -1,17 +1,11 @@
 #!/bin/sh
 
-## VARIABLES
+## Always required static variables
 APP_NAME="RoonServer"
-APKG_PKG_DIR="/usr/local/AppCentral/RoonServer"
-ROON_FILENAME="RoonServer_linuxx64.tar.bz2"
-ROON_PKG_URL="https://download.roonlabs.com/builds/$ROON_FILENAME"
-WEBUI_STATUS="$APKG_PKG_DIR/web-status"
+APKG_PKG_DIR="/usr/local/AppCentral/$APP_NAME"
 LOCKFILE="/tmp/.RoonServer-webui.lock"
-ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
-ROON_WWW_DIR="/usr/local/www/RoonServer"
-ROON_ID_DIR="${APKG_PKG_DIR}/id"
-ROON_LOG_FILE="/dev/null"
-ROON_PID=$(ps aux | grep "${APKG_PKG_DIR}/RoonServer/start.sh" | grep -v grep | awk '{print $1}')
+WEBUI_STATUS="$APKG_PKG_DIR/web-status"
+
 
 if [ -f $LOCKFILE ]; then
     exit
@@ -36,11 +30,22 @@ lockfile() {
             echo "Usage: $0 {create|remove|check}"
     esac
 }
-
 lockfile create
 
+#################### Functions Start ####################
+
 getInfo () {
-    # Getting system info for debugging purpose
+    # Setting static System Vars
+    ROON_FILENAME="RoonServer_linuxx64.tar.bz2"
+    ROON_PKG_URL="http://download.roonlabs.com/builds/$ROON_FILENAME"
+    ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
+    ROON_WWW_DIR="/usr/local/www/$APP_NAME"
+    ROON_ID_DIR="${APKG_PKG_DIR}/id"
+    ROON_LOG_FILE="/dev/null"
+    ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
+    ROON_WEBACTIONS_PIDFILE="/var/run/RoonServer_webactions.pid"
+
+
     ADM_VER=`confutil -get /etc/nas.conf Basic Version`
     ARCH=$(uname -m)
     MODEL=`confutil -get /etc/nas.conf Basic Model`
@@ -49,8 +54,6 @@ getInfo () {
     NAS_MEMFREE=`awk '/MemFree/ {print $2}' /proc/meminfo`
     APP_VERSION=$(cat ${APKG_PKG_DIR}/CONTROL/config.json | grep "version" | tr \" " " |  awk '{print $3}')
     ROON_VERSION=`[ -f "${APKG_PKG_DIR}/RoonServer/VERSION" ] && cat "${APKG_PKG_DIR}/RoonServer/VERSION" || echo "not available"`
-    ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
-    ROON_WEBACTIONS_PIDFILE="/var/run/RoonServer_webactions.pid"
     WATCH_PID="$([ -f "$ROON_WEBACTIONS_PIDFILE" ] && cat ${ROON_WEBACTIONS_PIDFILE})"
     NAS_DEF_IF=$(route | grep default | awk '{print $8}')
     NAS_IF_MTU=$(cat /sys/class/net/${NAS_DEF_IF}/mtu)
@@ -61,8 +64,9 @@ getInfo () {
        ROON_DATABASE_DIR_FS=`df -T "${ROON_DATABASE_DIR}" | grep "^/dev" | awk '{print $2}'`
        ROON_DATABASE_DIR_FREE_INODES=`df -PThi "${ROON_DATAROOT}" | awk '{print $5}' | tail -1`
        ROON_FFMPEG_DIR="${ROON_DATAROOT}/bin"
+       ROON_LOG_FILE="${ROON_DATAROOT}/RoonOnNAS.log.txt"
     fi
-
+    ROON_PID=$(ps aux | grep "${APKG_PKG_DIR}/RoonServer/start.sh" | grep -v grep | awk '{print $1}')
 }
 
 RoonOnNAS_folderCheck ()
@@ -235,8 +239,8 @@ downloadBinaries() {
 
   if test "$R" != "0"; then
     echolog "Roon Server download failed!"
-    echolog "URL: $ROON_PKG_URL)"
-    echolog "Status-Code: $STATUSCODE)"
+    echolog "URL: $ROON_PKG_URL"
+    echolog "Status-Code: $STATUSCODE"
     exit 1
   fi
   echolog "Download finished! [$STATUSCODE]"
@@ -253,12 +257,13 @@ downloadBinaries() {
   mv "$APKG_PKG_DIR/tmp/RoonServer" "$APKG_PKG_DIR/"
   [ -f "$APKG_PKG_DIR/tmp/$ROON_FILENAME" ] && /bin/rm "$ROON_FILENAME"
   [ -d "$APKG_PKG_DIR/RoonServer_Old" ] && /bin/rm -R "$APKG_PKG_DIR/RoonServer_Old"
-  getInfo
 }
+
+##################### Functions End #####################
 
 #check if RoonServer has initially been downloaded after apkg install
 if [ ! -d "$APKG_PKG_DIR/RoonServer" ]; then
-   getInfo
+  getInfo
 	downloadBinaries
 fi
 
@@ -282,6 +287,7 @@ if [ -f "$WEBUI_STATUS" ]; then
             redownload)
                 stopRoonServer
                 downloadBinaries
+                getInfo
                 startRoonServer
                 ;;
             logs)
