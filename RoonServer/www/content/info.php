@@ -22,8 +22,8 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
                         <h5 class="card-title">Roon Server</h5>
                         <p class="card-text">
                             <b><?php echo localize("OVERVIEW_ROONSERVER_PANEL_STATUS"); ?>
-                                :</b> <?php if (isRunning('/var/run/RoonServer.pid')) {
-                                echo '<span style="color: green;">' . localize("OVERVIEW_ROONSERVER_PANEL_STATUS_RUNNING") . '</span>';
+                                :</b> <?php if (isRunning()) {
+                                    echo '<span data-toggle="tooltip" title="' . localize("OVERVIEW_ROONSERVER_PANEL_PID") .': ' . isRunning("getpid") . '" style="color: green;">' . localize("OVERVIEW_ROONSERVER_PANEL_STATUS_RUNNING") . '</span>';
                             } else {
                                 echo '<span style="color: red;">' . localize("OVERVIEW_ROONSERVER_PANEL_STATUS_STOPPED") . '</span>';
                             } ?><br>
@@ -36,8 +36,6 @@ if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
                             print_r($cfg_data['general']['version']);
 
                             ?><br>
-                            <b><?php echo localize("OVERVIEW_ROONSERVER_PANEL_PID"); ?>
-                                :</b> <?php echo isRunning('/var/run/RoonServer.pid', "getpid"); ?><br>
                             <br>
                         </p>
                         <p>

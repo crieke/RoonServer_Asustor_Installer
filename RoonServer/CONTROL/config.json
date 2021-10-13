@@ -2,17 +2,17 @@
   "general" : {
     "package" : "RoonServer",
     "name" : "Roon Server",
-    "version" : "2021-07-26",
+    "version" : "2021-10-13",
     "depends" : [
       "ffmpeg"
     ],
     "conflicts" : [],
     "developer" : "Roon Labs LLC",
     "maintainer" : "Christopher Rieke",
-    "email" : "chris@RoonOnNAS.org",
+    "email" : "chris@roononnas.org",
     "website" : "https://roononnas.org",
     "architecture" : "x86-64",
-    "firmware" : "3.0"
+    "firmware" : "4.0"
   },
   "adm-desktop" : {
     "app" : {
