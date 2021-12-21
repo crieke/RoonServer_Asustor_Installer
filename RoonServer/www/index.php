@@ -25,7 +25,7 @@ include_once("__functions.php");
 
 
     <!-- jquery asset -->
-    <script src="assets/js/jquery-2.1.3.js"></script>
+    <script src="assets/js/jquery3.1.min.js"></script>
 
     <!-- popper.js asset -->
     <script src="assets/js/popper.min.js"></script>
