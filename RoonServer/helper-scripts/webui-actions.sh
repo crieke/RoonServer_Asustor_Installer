@@ -36,8 +36,8 @@ lockfile create
 
 getInfo () {
     # Setting static System Vars
-    ROON_FILENAME="RoonServer_linuxx64.tar.bz2"
-    ROON_PKG_URL="http://download.roonlabs.com/builds/$ROON_FILENAME"
+    ROON_PKG_URL="https://download.roonlabs.net/builds/RoonServer_linuxx64.tar.bz2"
+    ROON_FILENAME="${ROON_PKG_URL##*/}"
     ROON_TMP_DIR="${APKG_PKG_DIR}/tmp"
     ROON_WWW_DIR="/usr/local/www/$APP_NAME"
     ROON_ID_DIR="${APKG_PKG_DIR}/id"
