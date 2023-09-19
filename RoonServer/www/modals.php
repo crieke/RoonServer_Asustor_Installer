@@ -2,8 +2,8 @@
 include_once("__include.php");
 include_once("__functions.php");
 
-$section = filter_var($_GET['s'], FILTER_SANITIZE_STRING);
-$req = filter_var($_GET['r'], FILTER_SANITIZE_STRING);
+if (isset($_GET['s'])) { $section = htmlentities($_GET['s']);}
+if (isset($_GET['r'])) { $req = htmlentities($_GET['r']);}
 
 $modalTitle = "Alsa";
 $modalContent = "Content";

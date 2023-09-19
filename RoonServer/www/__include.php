@@ -1,7 +1,7 @@
 <?php
 $NAS_BRAND="Asustor";
 // Get Session ID
-$strSessionID = $_COOKIE['as_sid'];
+//$strSessionID = $_COOKIE['as_sid'];
 
 $nas_conf_file='/etc/nas.conf';
 $nas_conf = parse_ini_file($nas_conf_file, 1, INI_SCANNER_RAW);
@@ -46,7 +46,7 @@ $NASHOST = (isset($_SERVER['HTTPS']) ? "https" : "http") . "://$_SERVER[SERVER_N
 // Set specific variables by RoonServer.conf
 $app_conf = $string = file_get_contents('/usr/local/AppCentral/RoonServer/CONTROL/config.json');;
 $roon_conf_file = '/usr/local/AppCentral/RoonServer/etc/RoonServer.conf';
-$webui_status = '/usr/local/AppCentral/RoonServer/web-status';
+$webui_status = '/tmp/web-status';
 
 if (file_exists($roon_conf_file)) {
     $roon_conf = parse_ini_file($roon_conf_file, 1, INI_SCANNER_RAW);

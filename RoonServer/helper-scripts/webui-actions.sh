@@ -4,7 +4,7 @@
 APP_NAME="RoonServer"
 APKG_PKG_DIR="/usr/local/AppCentral/$APP_NAME"
 LOCKFILE="/tmp/.RoonServer-webui.lock"
-WEBUI_STATUS="$APKG_PKG_DIR/web-status"
+WEBUI_STATUS="/tmp/web-status"
 
 
 if [ -f $LOCKFILE ]; then
@@ -79,19 +79,19 @@ RoonOnNAS_folderCheck ()
 
 ## Log Function
 echolog () {
-	TIMESTAMP=$(date +%d.%m.%y-%H:%M:%S)
-	if [[ $# == 2 ]]; then
-		PARAMETER1=$1
-		PARAMETER2=$2
-		echo -e "${ST_COLOR}${TIMESTAMP}${REG_COLOR} --- ${HL_COLOR}${PARAMETER1}:${REG_COLOR} ${PARAMETER2}"
-		echo "${TIMESTAMP} --- ${PARAMETER1}: ${PARAMETER2}" >> $ROON_LOG_FILE
-	elif [[ $# == 1 ]]; then
-		PARAMETER1=$1
-		echo -e "${ST_COLOR}${TIMESTAMP}${REG_COLOR} --- ${PARAMETER1}"
-		echo "${TIMESTAMP} --- ${PARAMETER1}" >> $ROON_LOG_FILE
-	else
-		echo -e "The echolog function requires 1 or 2 parameters."
-	fi
+  TIMESTAMP=$(date +%d.%m.%y-%H:%M:%S)
+  if [[ $# == 2 ]]; then
+    PARAMETER1=$1
+    PARAMETER2=$2
+    echo -e "${ST_COLOR}${TIMESTAMP}${REG_COLOR} --- ${HL_COLOR}${PARAMETER1}:${REG_COLOR} ${PARAMETER2}"
+    echo "${TIMESTAMP} --- ${PARAMETER1}: ${PARAMETER2}" >> $ROON_LOG_FILE
+  elif [[ $# == 1 ]]; then
+    PARAMETER1=$1
+    echo -e "${ST_COLOR}${TIMESTAMP}${REG_COLOR} --- ${PARAMETER1}"
+    echo "${TIMESTAMP} --- ${PARAMETER1}" >> $ROON_LOG_FILE
+  else
+    echo -e "The echolog function requires 1 or 2 parameters."
+  fi
 }
 
 showInfo ()
@@ -134,10 +134,10 @@ startRoonServer() {
       [ -f "${ROON_FFMPEG_DIR}/ffmpeg" ] && [ ! -x "${ROON_FFMPEG_DIR}/ffmpeg" ] && chmod 755 "${ROON_FFMPEG_DIR}/ffmpeg"
 
        export ROON_DATAROOT
-	    export ROON_ID_DIR
-	    export PATH="$ROON_FFMPEG_DIR:$PATH"
-	    export ROON_INSTALL_TMPDIR="${ROON_TMP_DIR}"
-	    export TMP="${ROON_TMP_DIR}"
+      export ROON_ID_DIR
+      export PATH="$ROON_FFMPEG_DIR:$PATH"
+      export ROON_INSTALL_TMPDIR="${ROON_TMP_DIR}"
+      export TMP="${ROON_TMP_DIR}"
 
        echo "" | tee -a "$ROON_LOG_FILE"
        echo "############### Used FFMPEG Version ##############" | tee -a "$ROON_LOG_FILE"
@@ -147,25 +147,25 @@ startRoonServer() {
        echo "" | tee -a "$ROON_LOG_FILE"
 
         # Checking for additional start arguments.
-	    if [[ -f "${ROON_DATAROOT}/ROON_DEBUG_LAUNCH_PARAMETERS.txt" ]]; then
-	        ROON_ARGS=`cat "$ROON_DATAROOT/ROON_DEBUG_LAUNCH_PARAMETERS.txt" | xargs | sed "s/ ---- /\n---- /g"`
+      if [[ -f "${ROON_DATAROOT}/ROON_DEBUG_LAUNCH_PARAMETERS.txt" ]]; then
+          ROON_ARGS=`cat "$ROON_DATAROOT/ROON_DEBUG_LAUNCH_PARAMETERS.txt" | xargs | sed "s/ ---- /\n---- /g"`
         else
-	        ROON_ARGS=""
-	    fi
-	    echolog "ROON_DEBUG_ARGS ${ROON_ARGS}"
+          ROON_ARGS=""
+      fi
+      echolog "ROON_DEBUG_ARGS ${ROON_ARGS}"
 
         ## Start RoonServer
-	    (${APKG_PKG_DIR}/RoonServer/start.sh "${ROON_ARGS}" | while read line; do echo `date +%d.%m.%y-%H:%M:%S` " --- $line"; done >> $ROON_LOG_FILE  2>&1) &
+      (${APKG_PKG_DIR}/RoonServer/start.sh "${ROON_ARGS}" | while read line; do echo `date +%d.%m.%y-%H:%M:%S` " --- $line"; done >> $ROON_LOG_FILE  2>&1) &
 
-	    echo "" | tee -a $ROON_LOG_FILE
-	    echo "" | tee -a $ROON_LOG_FILE
-	    echo "########## Installed RoonServer Version ##########" | tee -a $ROON_LOG_FILE
-	    echo "${ROON_VERSION}" | tee -a $ROON_LOG_FILE
-	    echo "##################################################" | tee -a $ROON_LOG_FILE
-	    echo "" | tee -a $ROON_LOG_FILE
-	    echo "" | tee -a $ROON_LOG_FILE
-   	else
-		echolog "Database path not set in web ui."
+      echo "" | tee -a $ROON_LOG_FILE
+      echo "" | tee -a $ROON_LOG_FILE
+      echo "########## Installed RoonServer Version ##########" | tee -a $ROON_LOG_FILE
+      echo "${ROON_VERSION}" | tee -a $ROON_LOG_FILE
+      echo "##################################################" | tee -a $ROON_LOG_FILE
+      echo "" | tee -a $ROON_LOG_FILE
+      echo "" | tee -a $ROON_LOG_FILE
+     else
+    echolog "Database path not set in web ui."
     fi
 }
 
@@ -173,10 +173,10 @@ stopRoonServer() {
     echolog "Stopping RoonServer."
     echo "stop" > $LOCKFILE
     # stop script here
-	if [ ! -z "$ROON_PID" ] && kill -s 0 $ROON_PID; then
-	   echolog "Roon PID to be killed: $ROON_PID"
-		kill ${ROON_PID} >> $ROON_LOG_FILE
-	else
+  if [ ! -z "$ROON_PID" ] && kill -s 0 $ROON_PID; then
+     echolog "Roon PID to be killed: $ROON_PID"
+    kill ${ROON_PID} >> $ROON_LOG_FILE
+  else
     echolog "Could not stop RoonServer. It does not seem to be running."
    fi
 }
@@ -188,7 +188,7 @@ logs() {
 
     echolog "Creating Log-zipfile."
     echo "logs" > $LOCKFILE
-	start_dir=$(pwd)
+  start_dir=$(pwd)
     zipFile="${ROON_WWW_DIR}/tmp/RoonServer_Asustor_Logs_$logDate.zip"
     cd $ROON_DATAROOT
 
@@ -264,13 +264,13 @@ downloadBinaries() {
 #check if RoonServer has initially been downloaded after apkg install
 if [ ! -d "$APKG_PKG_DIR/RoonServer" ]; then
   getInfo
-	downloadBinaries
+  downloadBinaries
 fi
 
 #check web ui status
 if [ -f "$WEBUI_STATUS" ]; then
     getInfo
-    WEBUI_ACTION=`cat "$APKG_PKG_DIR/web-status"`
+    WEBUI_ACTION=`cat "$WEBUI_STATUS"`   
     echolog "Performing Action: $WEBUI_ACTION"
     set -- $WEBUI_ACTION
     rm $WEBUI_STATUS

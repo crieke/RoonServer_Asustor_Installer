@@ -1,17 +1,16 @@
 <?php
-define('DOCROOT');
+defined('DOCROOT');
 if ( basename(__FILE__) == basename($_SERVER["SCRIPT_FILENAME"]) ) {
     include_once("../__include.php");
     include_once("../__functions.php");
 }
 $strNoDir = 'etc';
 
-$strVarAction = filter_var($_GET['a'], FILTER_SANITIZE_STRING);
-$strVarTree = filter_var($_GET['t'], FILTER_SANITIZE_STRING);
-$strModalContent = filter_var($_GET['c'], FILTER_SANITIZE_STRING);
-/*
- * funktion prüfen auf etc
- */
+if (isset($_GET['a'])) { $strVarAction = htmlentities($_GET['a']);}
+if (isset($_GET['t'])) { $strVarTree = htmlentities($_GET['t']);}
+if (isset($_GET['c'])) { $strModalContent = htmlentities($_GET['c']);}
+
+$WEBSTATUS = '/tmp/web-status';
 
 if ($strVarAction == 'gettree') {
     $arr = getFoldersAt($strVarTree);
@@ -21,12 +20,10 @@ if ($strVarAction == 'gettree') {
 }
 
 if ($strVarAction == 'checkHelperScript') {
-    if (file_exists('/tmp/.RoonServer-webui.lock') or file_exists(APPINSTALLPATH . '/web-status')) {
+    if (file_exists('/tmp/.RoonServer-webui.lock') or file_exists('/tmp/web-status')) {
         $running = true;
-        $currentActivity = file_get_contents('/tmp/.RoonServer-webui.lock');
     } else { 
         $running = false;
-        unset($currentActivity);
     }
 
     header('Content-Type: application/json');
@@ -44,9 +41,10 @@ if ($strVarAction == 'checkHelperScript') {
 }
 
 if ($strVarAction == 'dbPathIsSet') {
-    $roon_conf = parse_ini_file('/usr/local/AppCentral/RoonServer/etc/RoonServer.conf', 1, INI_SCANNER_RAW);
+    $roon_conf = (object) parse_ini_file('/usr/local/AppCentral/RoonServer/etc/RoonServer.conf', 1, INI_SCANNER_RAW);
+    $roon_conf_object = json_decode(json_encode($roon_conf), FALSE);
     header('Content-Type: application/json');
-    if (array_key_exists('DB_Path', $roon_conf)) {
+    if (property_exists($roon_conf, 'DB_Path')) {
         echo json_encode(array(
             'success' => true
         ));
@@ -65,27 +63,28 @@ if ($strVarAction == 'updateformfield') {
 }
 
 if ($strVarAction == 'redownload') {
-    $bash_cmd = 'echo redownload > /usr/local/AppCentral/RoonServer/web-status';
-    shell_exec($bash_cmd);
+    $bash_cmd = "echo redownload > $WEBSTATUS";
+    $output = shell_exec($bash_cmd);
     return $output;
 }
 
 if ($strVarAction == 'downloadlogs') {
     $createLogDate = date('Ymd_His');
-    $bash_cmd = "echo logs $createLogDate > /usr/local/AppCentral/RoonServer/web-status";
-    shell_exec($bash_cmd);
+    $bash_cmd = "echo logs $createLogDate > $WEBSTATUS";
+    $output = shell_exec($bash_cmd);
     echo json_encode(array(
         'success' => true,
-        'logFile' => $createLogDate
+        'logFile' => $createLogDate,
+        'output' => $output
     ));
 }
 
 if ($strVarAction == 'startRoonServer') {
-    $bash_cmd = 'echo start > /usr/local/AppCentral/RoonServer/web-status';
+    $bash_cmd = "echo start > $WEBSTATUS";
     shell_exec($bash_cmd);
 }
 
 if ($strVarAction == 'restartRoonServer') {
-    $bash_cmd = 'echo restart > /usr/local/AppCentral/RoonServer/web-status';
+    $bash_cmd = "echo restart > $WEBSTATUS";
     shell_exec($bash_cmd);
 }

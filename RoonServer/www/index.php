@@ -126,7 +126,6 @@ include_once("__functions.php");
         </div>
     </div>
 </div>
-</div>
 
 <script>
     // Hide Modal
@@ -139,8 +138,12 @@ include_once("__functions.php");
             success: function (response) {
                 if (!response.success) {
                     $('#modalblock').html('');
+                    
                 } else {
+                    
                     isLoading();
+                    
+
                 }
             }
         });
@@ -184,7 +187,6 @@ include_once("__functions.php");
                 url: '<?php echo NASHOST;?>/RoonServer/ajax/ajax.php?a=checkHelperScript',
                 dataType: 'json',
                 success: function (response) {
-                    console.log(response.success);
                     if (!response.success) {
                         clearInterval(processRunning);
                         var ifrm = document.getElementById("frame");
@@ -349,6 +351,7 @@ include_once("__functions.php");
 
         setTimeout(function() {
             $('#modal').modal('hide');
+            
         }, 4000);
     }
 
@@ -376,12 +379,12 @@ include_once("__functions.php");
                 url: '<?php echo NASHOST;?>/RoonServer/ajax/ajax.php?a=checkHelperScript',
                 dataType: 'json',
                 success: function (response) {
-                    console.log(response.success);
                     if (!response.success) {
                         $('.btn-close').prop('disabled', false);
                         label_ReinstallDone = '<?php echo str_replace("'", "\'", localize("MODAL_REINSTALL_DONE")); ?>';
                         SuccessAni('#download-area', label_ReinstallDone);
                         clearInterval(processRunning);
+                        window.location.reload();
                                             }
                 }
             });
@@ -468,6 +471,9 @@ include_once("__functions.php");
     function saveAndRestart() {
         save_location();
         restartRoonServer();
+        setTimeout(function() {
+            window.location.reload();
+        }, 1000);
     }
 
     function restartRoonServer() {
@@ -508,19 +514,20 @@ include_once("__functions.php");
                             '<div class="text-center"><b><?php echo str_replace("'", "\'", localize("MODAL_REINSTALL_LOADING")); ?></b></div>');
                         $('#modal').modal('show');
                         roonIconAni('#loading')
-                        $onlyShow=true;
                         var processRunning = setInterval(checkProcess, 3000);
                         function checkProcess() {
                             $.ajax({
                                 url: '<?php echo NASHOST;?>/RoonServer/ajax/ajax.php?a=checkHelperScript',
                                 dataType: 'json',
                                 success: function (response) {
-                                    console.log(response.success);
                                     if (!response.success) {
                                         $('.btn-close').prop('disabled', false);
                                         label_ReinstallDone = '<?php echo str_replace("'", "\'", localize("MODAL_REINSTALL_DONE")); ?>';
                                         SuccessAni('#download-area', label_ReinstallDone);
                                         clearInterval(processRunning);
+                                        setTimeout(function() {
+                                            window.location.reload();
+                                        }, 2000);
                                                             }
                                 }
                             });
@@ -533,11 +540,6 @@ include_once("__functions.php");
             }
         });
     };
-
-
-$( function() {
-    isLoading();
-});
 
 
 </script>
